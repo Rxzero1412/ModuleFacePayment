@@ -6,6 +6,7 @@ import com.arcsoft.facerecognition.AFR_FSDKEngine;
 import com.arcsoft.facerecognition.AFR_FSDKError;
 import com.arcsoft.facerecognition.AFR_FSDKFace;
 import com.arcsoft.facerecognition.AFR_FSDKVersion;
+import com.arcsoft.sdk_demo.set.setdata;
 import com.guo.android_extend.java.ExtInputStream;
 import com.guo.android_extend.java.ExtOutputStream;
 
@@ -46,6 +47,55 @@ public class FaceDB {
 			mFaceList = new ArrayList<>();
 		}
 	}
+
+    public void newaddfacedb() throws IOException {
+        List<String> useridadd=new setdata().userid;
+        mRegister.clear();
+	    for (int i=0;i<useridadd.size();i++){
+            mRegister.add(new FaceRegist(new String(useridadd.get(i))));
+            if (saveInfo()) {
+                //update all names
+                FileOutputStream fs = null;
+                try {
+                    fs = new FileOutputStream(mDBPath + "/face.txt", true);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                ExtOutputStream bos = new ExtOutputStream(fs);
+                for (FaceRegist frface : mRegister) {
+                    bos.writeString(frface.mName);
+                }
+                bos.close();
+                fs.close();
+            }
+        }
+        try {
+            for (FaceRegist face : mRegister) {
+                Log.d(TAG, "load name:" + face.mName + "'s face feature data.");
+                FileInputStream fs = new FileInputStream(mDBPath + "/" + face.mName + ".data");
+                ExtInputStream bos = new ExtInputStream(fs);
+                AFR_FSDKFace afr = null;
+                do {
+                    if (afr != null) {
+                        if (mUpgrade) {
+                            //upgrade data.
+                        }
+                        face.mFaceList.add(afr);
+                    }
+                    afr = new AFR_FSDKFace();
+                } while (bos.readBytes(afr.getFeatureData()));
+                bos.close();
+                fs.close();
+                Log.d(TAG, "load name: size = " + face.mFaceList.size());
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
 	public FaceDB(String path) {
 		mDBPath = path;

@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.arcsoft.sdk_demo.activity.FaceDB;
+import com.arcsoft.sdk_demo.set.setdata;
 
 /**
  * Created by gqj3375 on 2017/4/28.
@@ -21,6 +22,7 @@ public class Application extends android.app.Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		new setdata().facepath=this.getExternalCacheDir().getPath();
 		mFaceDB = new FaceDB(this.getExternalCacheDir().getPath());
 		mImage = null;
 	}

@@ -52,7 +52,7 @@ public class RegisterActivity extends Activity implements SurfaceHolder.Callback
 	private UIHandler mUIHandler;
 	private setdata sd;
 	// Intent data.
-	private String 		mFilePath;
+	private String mFilePath;
 	private SurfaceView mSurfaceView;
 	private SurfaceHolder mSurfaceHolder;
 	private Bitmap mBitmap;
