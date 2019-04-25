@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.TextView;
 
@@ -175,7 +176,7 @@ public class DetecterActivity extends Activity implements OnCameraListener, View
                         @Override
                         public void run() {
                             //TODO
-
+                            username=mNameShow;
                         }
                     });
                 } else {
@@ -226,9 +227,47 @@ public class DetecterActivity extends Activity implements OnCameraListener, View
         mSurfaceView.setupGLSurafceView(mGLSurfaceView, true, mCameraMirror, mCameraRotate);
         mSurfaceView.debug_print_fps(true, false);
         sd = new setdata();
-//        web_run = (WebView) findViewById(R.id.web_run);
-//        tv_username_run = (TextView) findViewById(R.id.tv_username_run);
-//        tv_money_run = (TextView) findViewById(R.id.tv_money_run);
+        web_run = (WebView) findViewById(R.id.web_run);
+        web_run.loadUrl(new setdata().ServerLocalUrl+"getRFIDgoods.do");
+        WebSettings webSettings = web_run.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        tv_username_run = (TextView) findViewById(R.id.tv_username_run);
+        tv_money_run = (TextView) findViewById(R.id.tv_money_run);
+        findViewById(R.id.btn_put).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(username!=null){
+                    String mBaseUrl = new setdata().ServerLocalUrl;
+                    System.out.println(mBaseUrl);
+                    OkHttpClient okHttpClient = new OkHttpClient();//拿到okhttpClient对象
+                    okHttpClient.setCookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
+                    //发送数据
+                    Request.Builder builder = new Request.Builder();//构造Request
+                    final Request request = builder
+                            .get()
+                            .url(mBaseUrl + "facegetgoodstop.do?"+"userid="+username)
+                            .build();
+                    Call call = okHttpClient.newCall(request);//将Request封装为Call
+                    call.enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Request request, IOException e) {
+                            e.printStackTrace();
+                        }
+                        @Override
+                        public void onResponse(Response response) throws IOException {
+                            final String res = response.body().string();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
         final Handler handler = new Handler();
         Runnable runnable = new Runnable() {
             @Override
@@ -245,6 +284,50 @@ public class DetecterActivity extends Activity implements OnCameraListener, View
             }
         };
         runnable.run();
+
+
+        final Handler handler2 = new Handler();
+        Runnable runnable2 = new Runnable() {
+            @Override
+            public void run() {
+                // TODO Auto-generated method stub
+                String mBaseUrl = new setdata().ServerLocalUrl;
+                System.out.println(mBaseUrl);
+                OkHttpClient okHttpClient = new OkHttpClient();//拿到okhttpClient对象
+                okHttpClient.setCookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
+                //发送数据
+                Request.Builder builder = new Request.Builder();//构造Request
+                final Request request = builder
+                        .get()
+                        .url(mBaseUrl + "facegetmoney.do?"+"userid="+username)
+                        .build();
+                Call call = okHttpClient.newCall(request);//将Request封装为Call
+                call.enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Request request, IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onResponse(Response response) throws IOException {
+                        final String res = response.body().string();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                String[] s=res.split("#");
+                                if(s.length==2){
+                                    tv_money_run.setText("总价："+s[0]);
+                                    tv_username_run.setText("用户名："+s[1]);
+                                }
+
+                            }
+                        });
+                    }
+                });
+                handler2.postDelayed(this, 2500);
+            }
+        };
+        runnable2.run();
 
 
         AFT_FSDKError err = engine.AFT_FSDK_InitialFaceEngine(FaceDB.appid, FaceDB.ft_key, AFT_FSDKEngine.AFT_OPF_0_HIGHER_EXT, 16, 5);
