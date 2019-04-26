@@ -19,6 +19,7 @@ import android.view.Window;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.arcsoft.ageestimation.ASAE_FSDKAge;
 import com.arcsoft.ageestimation.ASAE_FSDKEngine;
@@ -260,7 +261,25 @@ public class DetecterActivity extends Activity implements OnCameraListener, View
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-
+                                    if(res.equals("200")){
+                                        web_run.loadUrl(new setdata().ServerLocalUrl+"success.do");
+                                        WebSettings webSettings = web_run.getSettings();
+                                        webSettings.setJavaScriptEnabled(true);
+                                        webSettings.setDomStorageEnabled(true);
+                                        try {
+                                            sleep(4500);
+                                            web_run.loadUrl(new setdata().ServerLocalUrl+"getRFIDgoods.do");
+                                            WebSettings webSettings2 = web_run.getSettings();
+                                            webSettings2.setJavaScriptEnabled(true);
+                                            webSettings2.setDomStorageEnabled(true);
+                                            username="";
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }else if(res.equals("500")){
+                                        //余额不足
+                                        Toasts("余额不足");
+                                    }
                                 }
                             });
                         }
@@ -347,6 +366,12 @@ public class DetecterActivity extends Activity implements OnCameraListener, View
 
         mFRAbsLoop = new FRAbsLoop();
         mFRAbsLoop.start();
+    }
+
+    public void Toasts(String t){
+        Toast toast=Toast.makeText(this,t, Toast.LENGTH_SHORT);
+        //显示toast信息
+        toast.show();
     }
 
     /* (non-Javadoc)
