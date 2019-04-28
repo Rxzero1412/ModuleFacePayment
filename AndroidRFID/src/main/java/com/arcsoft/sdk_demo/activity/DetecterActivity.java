@@ -58,6 +58,7 @@ import java.io.OutputStream;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -190,6 +191,82 @@ public class DetecterActivity extends Activity implements OnCameraListener, View
         }
     }
 
+    /**
+     * socket
+     * */
+
+    private String send_buff=null;
+    private String recv_buff=null;
+    private boolean sendbool=false;
+
+    private Handler handler = null;
+
+    Socket socket = null;
+
+    //不能在子线程中刷新UI，应为textView是主线程建立的
+    Runnable runnableUi = new Runnable() {
+        @Override
+        public void run() {
+
+        }
+    };
+    private void send() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                send_buff = "door";
+                //向服务器端发送消息
+                System.out.println("------------------------");
+                OutputStream outputStream=null;
+                try {
+                    outputStream = socket.getOutputStream();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                if(outputStream!=null){
+                    try {
+                        outputStream.write(send_buff.getBytes());
+                        System.out.println("door");
+                        outputStream.flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        }).start();
+    }
+
+
+    private void recv() {
+        //单开一个线程循环接收来自服务器端的消息
+        InputStream inputStream = null;
+        try {
+            inputStream = socket.getInputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (inputStream!=null){
+            try {
+                byte[] buffer = new byte[1024];
+                int count = inputStream.read(buffer);//count是传输的字节数
+                recv_buff = new String(buffer);//socket通信传输的是byte类型，需要转为String类型
+                System.out.println(recv_buff);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        //收到数据
+        if (recv_buff!=null){
+            handler.post(runnableUi);
+        }
+    }
+
+
+
     /* (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
      */
@@ -207,6 +284,29 @@ public class DetecterActivity extends Activity implements OnCameraListener, View
         count = 0;
         mFormat = ImageFormat.NV21;
         mHandler = new Handler();
+        //单开一个线程来进行socket通信
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    socket = new Socket("192.168.43.144" , 7654);
+                    if (socket!=null) {
+                        while (true){
+                            if(sendbool){
+                                send();
+                                sendbool=false;
+                                Thread.sleep(500);
+                            }
+                        }
+
+                    }
+                    else
+                        System.out.println("socket is null");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
 
         setContentView(R.layout.activity_camera);
         mGLSurfaceView = (CameraGLSurfaceView) findViewById(R.id.glsurfaceView);
@@ -250,6 +350,7 @@ public class DetecterActivity extends Activity implements OnCameraListener, View
                                 @Override
                                 public void run() {
                                     if(res.equals("200")){
+                                        sendbool=true;
                                         web_run.loadUrl(new setdata().ServerLocalUrl+"success.do");
                                         WebSettings webSettings = web_run.getSettings();
                                         webSettings.setJavaScriptEnabled(true);
@@ -321,8 +422,10 @@ public class DetecterActivity extends Activity implements OnCameraListener, View
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                System.out.println("#总价用户名"+res);
                                 String[] s=res.split("#");
                                 if(s.length==2){
+                                    System.out.println("#总价用户名2");
                                     tv_money_run.setText("总价："+s[0]);
                                     if(Double.parseDouble(s[0])==0.00){
                                         tv_username_run.setText("用户名：");
