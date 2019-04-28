@@ -1,16 +1,12 @@
 package com.arcsoft.sdk_demo.activity;
 
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -21,7 +17,6 @@ import android.webkit.WebView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.arcsoft.ageestimation.ASAE_FSDKAge;
 import com.arcsoft.ageestimation.ASAE_FSDKEngine;
 import com.arcsoft.ageestimation.ASAE_FSDKError;
 import com.arcsoft.ageestimation.ASAE_FSDKFace;
@@ -38,11 +33,8 @@ import com.arcsoft.facetracking.AFT_FSDKVersion;
 import com.arcsoft.genderestimation.ASGE_FSDKEngine;
 import com.arcsoft.genderestimation.ASGE_FSDKError;
 import com.arcsoft.genderestimation.ASGE_FSDKFace;
-import com.arcsoft.genderestimation.ASGE_FSDKGender;
 import com.arcsoft.genderestimation.ASGE_FSDKVersion;
-import com.arcsoft.sdk_demo.AlertDialog.AlertDialogs;
 import com.arcsoft.sdk_demo.R;
-import com.arcsoft.sdk_demo.http.httpget;
 import com.arcsoft.sdk_demo.set.setdata;
 import com.guo.android_extend.java.AbsLoop;
 import com.guo.android_extend.java.ExtByteArrayOutputStream;
@@ -65,7 +57,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -73,9 +64,6 @@ import java.util.List;
 
 import static java.lang.Thread.sleep;
 
-/**
- * Created by gqj3375 on 2017/4/28.
- */
 
 public class DetecterActivity extends Activity implements OnCameraListener, View.OnTouchListener, Camera.AutoFocusCallback {
     private final String TAG = this.getClass().getSimpleName();
@@ -336,7 +324,12 @@ public class DetecterActivity extends Activity implements OnCameraListener, View
                                 String[] s=res.split("#");
                                 if(s.length==2){
                                     tv_money_run.setText("总价："+s[0]);
-                                    tv_username_run.setText("用户名："+s[1]);
+                                    if(Double.parseDouble(s[0])==0.00){
+                                        tv_username_run.setText("用户名：");
+                                    }else {
+                                        tv_username_run.setText("用户名："+s[1]);
+                                    }
+
                                 }
 
                             }
